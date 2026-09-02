@@ -122,13 +122,18 @@ API endpoints are grouped by Service Roles, thought has been given to include wh
 |                                       |                         |                       |                     |                                                                                |                           |                   |                       |
 | **REST**                        |                         |                       |                     |                                                                                |                           |                   |                       |
 | /getinfo                              |         Required         |        Required        |                     | returns basic information about the indexing server instance                   |             Y             |      Similar      |                       |
-| /tweaks/:blockheight                  |                         |        Required        |                     | returns tweak data; optional parameters filterSpent + dustLimit                |             Y             |                   |        Similar        |
-| /compute-index/:blockheight           |                         |        Optional        |                     | compact transaction index with tweak mappings                                  |             Y             |                   |                       |
-| /utxos/:blockheight                   |                         |        Optional        |                     | returns UTXO information for a specific block                                  |             Y             |                   |                       |
+| /tweaks/:blockheight                  |                         |        Required        |                     | returns tweak data; optional parameters filterSpent + dustLimit                |           Y [1]           |                   |        Similar        |
+| /compute-index/:blockheight           |                         |        Optional        |                     | compact transaction index with tweak mappings                                  |           Y [1]           |                   |                       |
+| /utxos/:blockheight                   |                         |        Optional        |                     | returns UTXO information for a specific block                                  |           Y [1]           |                   |                       |
 |                                       |                         |                       |                     |                                                                                |                           |                   |                       |
 | **gRPC**                        |                         |                       |                     |                                                                                |                           |                   |                       |
 | StreamComputeIndex                    |                         |        Optional        |                     | returns a compact transaction index with tweak mappings and output information |             Y             |                   |                       |
 | StreamBlockScanDataShort              |                         |        Optional        |                     | adds outputs spent to StreamComputeIndex                                       |             Y             |                   |                       |
+| GetInfo                               |                         |        Optional        |                     | gRPC counterpart of /getinfo, includes enabled index-mode flags                |             Y             |                   |                       |
+| GetBestBlockHeight                    |                         |        Optional        |                     | current indexed tip height                                                     |             Y             |                   |                       |
+| GetBlockHashByHeight                  |                         |        Optional        |                     | block hash for a height; errors below the sync start height                    |             Y             |                   |                       |
+| GetSpentOutputsShort                  |                         |        Optional        |                     | 8-byte x-only pubkey prefixes of outputs spent in a block (unsalted)           |             Y             |                   |                       |
+| GetFullBlock                          |                         |        Optional        |                     | full raw block, so a matched client needs no separate block source             |             Y             |                   |                       |
 |                                       |                         |                       |                     |                                                                                |                           |                   |                       |
 | **Electrum**                    |                         |                       |                     |                                                                                |                           |                   |                       |
 | blockchain.silentpayments.subscribe   |            Y            |                       |                     | subscribes to txid and tweak from start_height to mempool                      |                           |         Y         |                       |
@@ -136,6 +141,14 @@ API endpoints are grouped by Service Roles, thought has been given to include wh
 | blockchain.scripthash.subscribe       |           1.1+           |                       |                     |                                                                                |                           |                   |           Y           |
 | blockchain.scripthash.get_balance     |           1.1+           |                       |                     |                                                                                |                           |                   |           Y           |
 | blockchain.scripthash.get_history     |           1.1+           |                       |                     |                                                                                |                           |                   |           Y           |
+
+
+[1] blindbit-oracle v2: JSON routes answer but are deprecated in favor of gRPC,
+and response shapes changed from v1. The dustLimit / filterSpent query
+parameters above are ignored by the v2 REST handlers, and the gRPC request's
+dustlimit / cut_through fields are documented upstream as reserved, not yet
+applied. v1's filter endpoints were removed; spent outputs are unsalted 8-byte
+x-only pubkey prefixes. Verified against a production v2 deployment, 2026-09-02.
 
 ### API Request/Response Schemas
 
